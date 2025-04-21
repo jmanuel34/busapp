@@ -1,0 +1,37 @@
+- name: Registrar claves SSH en known_hosts
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  roles:
+    - known_hosts
+
+- name: Preparar entorno de despliegue
+  hosts: localhost
+  connection: local
+  become: true
+  roles:
+    - prepare_keys
+
+- name: Inicializar clúster Swarm
+  hosts: manager
+  become: true
+  roles:
+    - init_swarm
+
+- name: Unir workers al Swarm
+  hosts: workers
+  become: true
+  roles:
+    - init_swarm
+
+- name: Construir imágenes localmente en todos los nodos
+  hosts: all
+  become: true
+  roles:
+    - build
+
+- name: Desplegar stack
+  hosts: manager
+  become: true
+  roles:
+    - deploy

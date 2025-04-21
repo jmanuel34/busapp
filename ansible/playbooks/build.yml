@@ -1,0 +1,32 @@
+- name: Construir imágenes necesarias en todos los nodos
+  hosts: all
+  become: true
+  tasks:
+    - name: Crear directorios locales de trabajo
+      file:
+        path: "/home/vagrant/build/{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - backend
+        - frontend
+
+    - name: Copiar Dockerfile del backend
+      copy:
+        src: "../../docker/backend/Dockerfile"
+        dest: "/home/vagrant/build/backend/Dockerfile"
+
+    - name: Copiar Dockerfile del frontend
+      copy:
+        src: "../../docker/frontend/Dockerfile"
+        dest: "/home/vagrant/build/frontend/Dockerfile"
+
+    - name: Construir imagen backend
+      shell: docker build -t local/bus-backend ./backend
+      args:
+        chdir: /home/vagrant/build
+
+    - name: Construir imagen frontend
+      shell: docker build -t local/bus-frontend ./frontend
+      args:
+        chdir: /home/vagrant/build

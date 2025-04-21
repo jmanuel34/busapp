@@ -1,0 +1,26 @@
+- name: Limpiar entorno Swarm y Docker
+  hosts: all
+  become: true
+  tasks:
+    - name: Eliminar stack busapp (solo en manager)
+      shell: docker stack rm busapp
+      when: inventory_hostname == "192.168.56.10"
+      ignore_errors: yes
+
+    - name: Esperar 5 segundos para eliminación del stack
+      pause:
+        seconds: 5
+      when: inventory_hostname == "192.168.56.10"
+
+    - name: Eliminar imagen local de backend (si existe)
+      shell: docker image rm -f local/bus-backend
+      ignore_errors: yes
+
+    - name: Eliminar imagen local de frontend (si existe)
+      shell: docker image rm -f local/bus-frontend
+      ignore_errors: yes
+
+    - name: Eliminar directorio de build (si existe)
+      file:
+        path: /home/vagrant/build
+        state: absent

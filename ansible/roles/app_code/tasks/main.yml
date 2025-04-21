@@ -1,0 +1,11 @@
+- name: Asegurar que /home/vagrant existe
+  file:
+    path: /home/vagrant
+    state: directory
+    mode: '0755'
+
+- name: Clonar repo original de la app (ricardoinstructor)
+  git:
+    repo: https://github.com/ricardoinstructor/bus-app.git
+    dest: /home/vagrant/bus-app-clone
+    update: yes

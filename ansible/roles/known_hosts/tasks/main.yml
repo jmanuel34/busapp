@@ -1,0 +1,11 @@
+- name: Añadir huella de manager al known_hosts
+  shell: ssh-keyscan 192.168.56.10 >> ~/.ssh/known_hosts
+  changed_when: false
+
+- name: Añadir huella de worker1 al known_hosts
+  shell: ssh-keyscan 192.168.56.11 >> ~/.ssh/known_hosts
+  changed_when: false
+
+- name: Añadir huella de worker2 al known_hosts
+  shell: ssh-keyscan 192.168.56.12 >> ~/.ssh/known_hosts
+  changed_when: false

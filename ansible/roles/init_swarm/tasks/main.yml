@@ -1,0 +1,31 @@
+- name: Inicializar el cluster Swarm
+  shell: docker swarm init --advertise-addr {{ ansible_host }}
+  register: swarm_init
+  failed_when: false
+  changed_when: "'This node is already part of a swarm' not in swarm_init.stderr"
+  when: inventory_hostname == "192.168.56.10"
+
+- name: Obtener token de worker
+  shell: docker swarm join-token worker -q
+  register: swarm_token
+  when: inventory_hostname == "192.168.56.10"
+
+- name: Guardar token en archivo temporal
+  copy:
+    content: "{{ swarm_token.stdout }}"
+    dest: /tmp/swarm_worker_token
+  when: inventory_hostname == "192.168.56.10"
+
+- name: Leer token desde el manager
+  slurp:
+    src: /tmp/swarm_worker_token
+  register: token_data
+  delegate_to: 192.168.56.10
+  when: inventory_hostname != "192.168.56.10"
+
+- name: Unir al worker al swarm
+  shell: docker swarm join --token {{ token_data.content | b64decode }} 192.168.56.10:2377
+  when: inventory_hostname != "192.168.56.10"
+  register: join_result
+  failed_when: false
+  changed_when: "'This node joined a swarm' in join_result.stdout"

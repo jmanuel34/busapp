@@ -1,0 +1,46 @@
+- name: Crear red overlay
+  shell: docker network create --driver overlay --attachable busnet
+  args:
+    warn: false
+  register: network_create
+  failed_when: false
+
+- name: Crear stack.yml dinámicamente
+  copy:
+    dest: /vagrant/docker/stack.yml
+    content: |
+      version: "3.9"
+
+      services:
+        proxy:
+          image: nginx:alpine
+          ports:
+            - "8080:80"
+          networks:
+            - busnet
+
+        frontend:
+          image: local/bus-frontend
+          networks:
+            - busnet
+
+        backend:
+          image: local/bus-backend
+          networks:
+            - busnet
+
+        db:
+          image: postgres:15
+          environment:
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: pass
+            POSTGRES_DB: busdb
+          networks:
+            - busnet
+
+      networks:
+        busnet:
+          external: true
+
+- name: Desplegar stack
+  shell: docker stack deploy -c /vagrant/docker/stack.yml busapp

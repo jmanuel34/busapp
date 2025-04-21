@@ -1,0 +1,16 @@
+- name: Obtener código de la app
+  hosts: localhost
+  roles:
+    - app_code
+
+- name: Construir imágenes reales
+  hosts: all
+  become: true
+  roles:
+    - build
+
+- name: Desplegar la app real
+  hosts: manager
+  become: true
+  roles:
+    - deploy

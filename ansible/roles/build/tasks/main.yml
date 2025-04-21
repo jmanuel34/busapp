@@ -1,0 +1,48 @@
+- name: Crear carpetas build (backend y frontend)
+  file:
+    path: "/home/vagrant/build/{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - backend
+    - frontend
+
+- name: Copiar código del backend (api/) desde repo clonado
+  synchronize:
+    src: "/home/vagrant/bus-app-clone/api/"
+    dest: "/home/vagrant/build/backend/"
+    rsync_opts:
+      - "--rsh=ssh -i /home/vagrant/.ssh/keys/{{ host_key_map[inventory_hostname] }}"
+  delegate_to: localhost
+
+- name: Construir imagen backend
+  docker_image:
+    name: local/bus-backend
+    build:
+      path: /home/vagrant/build/backend
+
+- name: Copiar código del frontend (client/) desde repo clonado
+  synchronize:
+    src: "/home/vagrant/bus-app-clone/client/"
+    dest: "/home/vagrant/build/frontend/"
+    rsync_opts:
+      - "--rsh=ssh -i /home/vagrant/.ssh/keys/{{ host_key_map[inventory_hostname] }}"
+  delegate_to: localhost
+
+- name: Construir imagen frontend
+  docker_image:
+    name: local/bus-frontend
+    build:
+      path: /home/vagrant/build/frontend
+
+- name: Asegurar que postgres:15 está disponible
+  docker_image:
+    name: postgres
+    tag: "15"
+    source: pull
+
+- name: Copiar nginx.conf del repo clonado al proxy config
+  copy:
+    src: "/home/vagrant/bus-app-clone/nginx.conf"
+    dest: "/vagrant/docker/proxy.conf"
+  delegate_to: localhost

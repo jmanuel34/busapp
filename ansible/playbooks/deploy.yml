@@ -1,0 +1,13 @@
+- name: Desplegar stack de bus-app en el manager
+  hosts: manager
+  become: yes
+  tasks:
+    - name: Crear red overlay
+      shell: docker network create --driver overlay --attachable busnet
+      args:
+        warn: false
+      register: network_create
+      failed_when: false
+
+    - name: Desplegar stack bus-app
+      shell: docker stack deploy -c /vagrant/docker/stack.yml busapp

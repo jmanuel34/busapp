@@ -1,0 +1,43 @@
+- name: Crear carpeta de claves
+  file:
+    path: /home/vagrant/.ssh/keys
+    state: directory
+    mode: '0700'
+    owner: vagrant
+    group: vagrant
+
+- name: Copiar clave de manager
+  copy:
+    src: /vagrant/.vagrant/machines/manager/virtualbox/private_key
+    dest: /home/vagrant/.ssh/keys/manager
+    mode: '0600'
+    owner: vagrant
+    group: vagrant
+
+- name: Copiar clave de worker1
+  copy:
+    src: /vagrant/.vagrant/machines/worker1/virtualbox/private_key
+    dest: /home/vagrant/.ssh/keys/worker1
+    mode: '0600'
+    owner: vagrant
+    group: vagrant
+
+- name: Copiar clave de worker2
+  copy:
+    src: /vagrant/.vagrant/machines/worker2/virtualbox/private_key
+    dest: /home/vagrant/.ssh/keys/worker2
+    mode: '0600'
+    owner: vagrant
+    group: vagrant
+
+- name: Añadir huella de manager al known_hosts
+  shell: ssh-keyscan 192.168.56.10 >> /home/vagrant/.ssh/known_hosts
+  changed_when: false
+
+- name: Añadir huella de worker1 al known_hosts
+  shell: ssh-keyscan 192.168.56.11 >> /home/vagrant/.ssh/known_hosts
+  changed_when: false
+
+- name: Añadir huella de worker2 al known_hosts
+  shell: ssh-keyscan 192.168.56.12 >> /home/vagrant/.ssh/known_hosts
+  changed_when: false
